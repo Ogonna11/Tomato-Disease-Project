@@ -214,3 +214,6 @@ A variable is only needed in the model if it is necessary given that the informa
 from all the other covariables is already used. It is thus necessary to check each
 covariable as last term in the model. Currently, there is no way to automatize this, since the built-in R command `drop1` is not functional for the "`mlm`" model. We need to manually enumerate each
 covariable in the last position and extract the test of the last row of the ANOVA table.
+
+
+We need to do lasso one way or the other or apply some variable selection techniques in this setting.
