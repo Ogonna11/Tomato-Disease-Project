@@ -1,0 +1,98 @@
+---
+title: "Tomato Project"
+output: html_document
+date: "2024-01-16"
+---
+```{r, echo=TRUE}
+# Set and get working directory
+setwd("C:/Users/rcm0075/Documents/GitHub/Tomato-Disease-Project")
+getwd()
+```
+#  Load necessary libraries.
+```{r, message=FALSE}
+library(compositions)  #
+```
+
+# 1. Data Preparation
+
+```{r}
+
+data <- read.csv("Model.csv")
+data<-data[,-1]
+Response <- data[, c("SC1", "SC2", "SC3", "SC4", "SC5", "SC6", "SC7", "SC8")]
+data <- data[, !(names(data) %in% c("SC1", "SC2", "SC3", "SC4", "SC5", "SC6", "SC7", "SC8"))]
+
+```
+### Treat Response SC1 to SC8 as composition
+```{r}
+Y <- acomp(Response)
+
+```
+
+### Convert categorical variables to factors and introduce contrast
+
+```{r}
+Time <- factor(data$Time)
+Year<-factor(data$Year)
+
+Severity <- factor(data$Severity, ordered = TRUE)  
+Commercial_small_scale <- factor(data$Commercial.small.scale,c("Small", "Commercial"), ordered = TRUE)
+
+
+contrasts(Severity)<-"contr.treatment"
+contrasts(Commercial_small_scale)<-"contr.treatment"
+contrasts(Time)<-"contr.treatment"
+contrasts(Year)<-"contr.treatment"
+
+data$Year<-Year
+data$Severity<-Severity
+data$Commercial.small.scale<-Commercial_small_scale
+data$Time<-Time
+```
+
+# Modeling
+
+```{r}
+# Get all predictor variable names
+predictor_vars <- names(data)
+
+# Create the formula string
+formula_str <- paste("ilr(Y) ~", paste(predictor_vars, collapse = " + "))
+
+# Convert the string to a formula
+formula <- as.formula(formula_str)
+
+
+model <- lm(formula, data = data)
+#model
+
+
+
+```
+
+### Coefficients: Intercepts and Slope
+```{r}
+(a = ilrInv(coef(model)[1,],orig=Y))
+(b = ilrInv(rbind(0,coef(model)[-1,]),orig=Y))
+
+```
+
+
+# Visualizing the model
+
+```{r}
+coefs <- ilrInv(coef(model),orig=Y)
+# Define a color palette
+colors <- rainbow(ncol(coefs))
+
+# Create the bar plot with colors
+barplot(coefs, las=2, xlim=c(0, 95), col=colors)
+
+
+```
+
+# Significant variables
+```{r}
+anova(model)
+```
+
